@@ -1,0 +1,65 @@
+# config/generator.yaml
+# Параметры генератора для темы "ПассажирМаршрут".
+# Имена колонок, целевая переменная и пути к файлам остаются в src/constants.py.
+# Здесь хранятся только настраиваемые параметры синтетических данных.
+
+dataset:
+  n_samples: 3000          # Основной набор: одна строка = один пассажир
+  age_missing_rate: 0.05    # Доля строк, где возраст скрывается
+  train_size : 0.6
+  val_size : 0.2
+  test_size : 0.2
+
+distributions:
+  age:
+    kind: truncated_uniform
+    low: 18
+    high: 80
+
+  deck:
+    values: [lower, middle, upper]
+    probs: [0.41, 0.21, 0.38]
+
+  distance_m:
+    kind: truncated_normal_by_deck
+    lower:  {mean: 166, std: 45, low: 20, high: 300}
+    middle: {mean: 137, std: 45, low: 20, high: 300}
+    upper:  {mean: 157, std: 50, low: 20, high: 300}
+    decimals: 1
+
+  luggage_count:
+    values: [0, 1, 2, 3]
+    probs: [0.25, 0.24, 0.24, 0.27]
+
+  briefing:
+    values: [0, 1]
+    probs: [0.45, 0.55]
+
+hidden_model:
+  speed:
+    base_mps: 1.35
+    age_slope_per_year: -0.003
+    deck_bonus_mps:
+      lower: -0.08
+      middle: 0.00
+      upper: 0.10
+    luggage_penalty_mps: 0.04
+    briefing_bonus_mps: 0.03
+    noise_std_mps: 0.05
+
+  start_delay_sec:
+    base: 18
+    age_slope_per_year: 0.008
+    luggage_penalty_per_bag: 8
+    briefing_bonus: -6
+    noise_std: 3
+
+  random_delay_sec:
+    mean: 8
+    std: 3
+
+  time_limit_sec: 180
+# Правило генерации таргета, не изменяется
+derived:
+  arrival_rule: "1 if total_time_sec <= time_limit_sec else 0"
+  total_time_components: [start_delay_sec, travel_time_sec, random_delay_sec]

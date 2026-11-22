@@ -18,6 +18,12 @@ NUM_FEATURES: list[str] = ["age", "distance_m", "luggage_count"]  # Числов
 CAT_FEATURES: list[str] = ["deck", "briefing"]  # Категориальные признаки
 ALL_FEATURES: list[str] = NUM_FEATURES + CAT_FEATURES  # Полный набор признаков для моделей
 
+ID_AGE: str = "age"
+ID_DIST: str = "distance_m"
+ID_LUGGAGE: str = "luggage_count"
+ID_BRIEFING: str = "briefing"
+ID_DECK: str = "deck"
+
 ABLATION_DROP_FEATURES: list[str] = ["distance_m", "briefing"]  # Признаки, исключаемые при абляции
 REDUCED_FEATURES: list[str] = [
     col for col in ALL_FEATURES if col not in ABLATION_DROP_FEATURES
@@ -30,7 +36,11 @@ HIDDEN_COLS: list[str] = [
     "random_delay",  # Случайная задержка в пути (сек)
     "total_time",  # Итоговое время прибытия к месту сбора (сек)
 ]  # Скрытые переменные генератора (в модели не передаются)
-
+ID_ACTUAL_SPEED: str = "actual_speed"
+ID_START_DELAY: str = "start_delay"
+ID_TRAVEL_TIME: str = "travel_time"
+ID_RANDOM_DELAY: str = "random_delay"
+ID_TOTAL_TIME: str = "total_time"
 # Допустимые значения категорий (для проверки данных и кодирования)
 DECK_VALUES: list[str] = ["lower", "middle", "upper"]  # Палуба: нижняя, средняя, верхняя
 BRIEFING_VALUES: list[int] = [0, 1]  # Инструктаж: 0 — не пройден, 1 — пройден

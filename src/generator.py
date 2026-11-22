@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import yaml
@@ -21,7 +19,7 @@ from src.constants import (
     ID_START_DELAY,
     ID_TRAVEL_TIME,
     ID_RANDOM_DELAY,
-    ID_TOTAL_TIME
+    ID_TOTAL_TIME,
 )
 
 with open(GENERATOR_CONFIG_PATH, mode="r", encoding="utf-8") as f:
@@ -48,8 +46,8 @@ def create_deck() -> np.ndarray:
 
 
 def create_distance_m(deck: np.ndarray) -> np.ndarray:
-    distance = np.empty(n, dtype=float)
     dist_cfg = cfg["distributions"]["distance_m"]
+    distance = np.empty(n, dtype=float)
 
     for level in cfg["distributions"]["deck"]["values"]:
         mask = deck == level
@@ -65,7 +63,7 @@ def create_distance_m(deck: np.ndarray) -> np.ndarray:
             level_cfg["high"],
         )
 
-    return np.round(distance, dist_cfg["lower"]["decimals"])
+    return np.round(distance, dist_cfg["decimals"])
 
 
 def create_luggage_count() -> np.ndarray:
@@ -140,28 +138,28 @@ def generate_dataset() -> tuple[pd.DataFrame, pd.DataFrame]:
     luggage_count = create_luggage_count()
     briefing = create_briefing()
 
-    speed = create_speed(age, deck, luggage_count, briefing)
+    actual_speed = create_speed(age, deck, luggage_count, briefing)
     start_delay_sec = create_start_delay_sec(age, luggage_count, briefing)
-    rnd_delay_sec = create_random_delay_sec()
-    travel_time_sec = distance_m / speed
+    random_delay_sec = create_random_delay_sec()
+    travel_time_sec = distance_m / actual_speed
 
     time_limit = cfg["hidden_model"]["time_limit_sec"]
-    arrived_in_time = create_target(time_limit, start_delay_sec, travel_time_sec, rnd_delay_sec)
+    arrived_in_time = create_target(time_limit, start_delay_sec, travel_time_sec, random_delay_sec)
 
     hidden_df = pd.DataFrame(
         {
             ID_COL: passenger_id,
-            ID_ACTUAL_SPEED: speed,
+            ID_ACTUAL_SPEED: actual_speed,
             ID_START_DELAY: start_delay_sec,
             ID_TRAVEL_TIME: travel_time_sec,
-            ID_RANDOM_DELAY: rnd_delay_sec,
-            ID_TOTAL_TIME: start_delay_sec + travel_time_sec + rnd_delay_sec,
+            ID_RANDOM_DELAY: random_delay_sec,
+            ID_TOTAL_TIME: start_delay_sec + travel_time_sec + random_delay_sec,
         }
     )
 
     create_missing_for_age(age)
 
-    df = pd.DataFrame(
+    raw_df = pd.DataFrame(
         {
             ID_COL: passenger_id,
             ID_AGE: age,
@@ -173,7 +171,7 @@ def generate_dataset() -> tuple[pd.DataFrame, pd.DataFrame]:
         }
     )
 
-    return df, hidden_df
+    return raw_df, hidden_df
 
 
 def save_dataset() -> None:
